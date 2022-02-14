@@ -44,17 +44,17 @@
             $().ready(function(){
             
                 $('td').dblclick(function(){
-                    var thisTD = this
+                    var thisTD = $(this)
 
                     thisTD.myeval = function() {
-                        let code = thisTD.data('code')
+                        let code = this.data('code')
                         if (code[0]==='=') {
-                            return Function(code.substr(1)).call(thisTD)
+                            return Function(code.substr(1)).call(this)
                         }
                         return code
                     }
 
-                    $(thisTD).html('<textarea></textarea>');
+                    thisTD.html('<textarea></textarea>');
 
                     let textarea = $(thisTD).children().first()
 
@@ -76,10 +76,7 @@
             })
             
 
-            class LATTICE 
-            {
-                
-            }
+
         </script>
     </body>
 </html>
