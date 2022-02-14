@@ -28,8 +28,11 @@
                     9 【格】的表象与实质的二重性的显现。<br/>
                     9.1 当焦点离开格子或者按下Ctrl+Enter时用myeval($('td').date('code'))求值并显示，并作为台面上的值。<br/>
                     9.2 当双击格子的时候显示台面下的值。<br/>
-                    9.3 请双击这里！对！现在！
-
+                    9.3 请双击这里！对！现在！<br/>
+                    9.4 内部反思<br/>
+                        =return this === thisTD <br/>
+                    10 【地址】。第几个生成出来的格地址就是几。<br/>
+                    10.1 <br/>
                     <!--
                     9.1 实质就是JS代码，当鼠标点击【格】的时候【格】显示的是代码。<br/>
                     9.2 表象就是JS代码的求值结果,当焦点离开的时候进行求值并在【格】中显示结果。表象=eval(【格】.没想好)<br/>
@@ -38,17 +41,19 @@
             </tr>
         </table>
         <script>
-            var myeval = function(code) {
-                if (code[0]==='=') {
-                    return eval(code.substr(1))
-                }
-                return code
-            }
-
             $(document).ready(function(){
             
                 $('td').dblclick(function(){
                     var thisTD = $(this)
+
+                    thisTD.myeval = function() {
+                        let code = thisTD.data('code')
+                        if (code[0]==='=') {
+                            return Function(code.substr(1)).call(thisTD)
+                        }
+                        return code
+                    }
+
                     thisTD.html('<textarea></textarea>');
 
                     let textarea = $(this).children().first()
@@ -59,14 +64,22 @@
                         if(e.ctrlKey && e.keyCode === 13) {
                             let code = textarea.val()
                             thisTD.data('code', code)
-                            thisTD.text(myeval(code))
+
+                            var value = thisTD.myeval()
+                            thisTD.text(value)
                             console.log(thisTD.data('code'))
+                            console.log(value)
                         }
                     });
 
                 });
             })
             
+
+            class LATTICE
+            {
+
+            }
         </script>
     </body>
 </html>
