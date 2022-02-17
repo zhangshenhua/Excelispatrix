@@ -19,6 +19,17 @@ SAVE = function(){
     localStorage.setItem('tabledata', JSON.stringify(DATA))
 }
 
+if(0){
+$.fn.extend({
+    myeval : function() {
+        let code = this.code
+        if (code[0]==='=') {
+            return Function(code.substr(1)).call(this)
+        }
+        return code
+    }
+})
+}
 
 function createLATTICE (i, j)
 {
@@ -39,6 +50,7 @@ function createLATTICE (i, j)
         }
     })
 
+    if(1){
     $o.myeval = function() {
         let code = this.code
         if (code[0]==='=') {
@@ -46,7 +58,7 @@ function createLATTICE (i, j)
         }
         return code
     }
-    
+    }
     $o.dblclick(function(){
         var $thisTD = $o
 
@@ -72,10 +84,12 @@ function createLATTICE (i, j)
                 $thisTD.code =  $textarea.val()
                 $thisTD.text(OLDVALUE)
             }
+
         });
 
         $textarea.focus()
     })
+
 
     return $o
 }
@@ -88,7 +102,10 @@ if (!localStorage.getItem('tabledata')){
 
 DATA = JSON.parse(localStorage.getItem('tabledata'))
 
+
+
 LOAD = function () {
+    AoAo$TD=[]
     $.each(DATA,(i,row)=>{
 
         $(`<tr id="${i}"></tr>`).appendTo('.BIGTABLE')
