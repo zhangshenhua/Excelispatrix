@@ -11,72 +11,105 @@
         }
     </style>
     <body>
-        <table>
-            <tr>
-                <td>
-                    $ 据说实践会产生新的理性<br/>
-                    1 Excelispatrix不是一个空的东西，在完成时它里面有东西。<br/>
-                    2 那么，先有什么呢？换句话说，应该以什么作为开端的呢？<br/>
-                    3 ta至少要有一个用来输入东西的东西。<br/>
-                    4 实际上，ta自身就是一个可以被改写的东西。<br/>
-                    5 0.0002只有一个格子，但Excelispatrix不是只具有一个格子的东西，并没有规定ta只能有一个格子。<br/>
-                    6 由于没有这样的规定性，所以ta与【表】具有了共同的规定性，一个表的格数没有规定。<br/>
-                    7 【格】有界限,需要将界限表示出来。<br/>
-                    8 【格】是一个可以复制其自身的东西，复制可以无限进行下去。<br/>
-                    8.1 复制以行或列为单位，整个场域维持一张表，像excel，以二维表为基础结构？<br/>
-                    8.1.1 按Ctrl+←将当前【格】所在列复制到该列的左边，→↑↓亦复如是。<br/>
-                    9 【格】的表象与实质的二重性的显现。<br/>
-                    9.1 当焦点离开格子或者按下Ctrl+Enter时用myeval($('td').date('code'))求值并显示，并作为台面上的值。<br/>
-                    9.2 当双击格子的时候显示台面下的值。<br/>
-                    9.3 请双击这里！对！现在！<br/>
-                    9.4 内部反思<br/>
-                        =return this === thisTD <br/>
-                    10 【地址】。第几个生成出来的格地址就是几。<br/>
-                    10.1 <br/>
-                    <!--
-                    9.1 实质就是JS代码，当鼠标点击【格】的时候【格】显示的是代码。<br/>
-                    9.2 表象就是JS代码的求值结果,当焦点离开的时候进行求值并在【格】中显示结果。表象=eval(【格】.没想好)<br/>
-                     8.2 复制以格为单位，格分裂为表，表中套着表，像emacs，以树为基础结构？<br/> -->
-                </td>
-            </tr>
+        <table class="BIGTABLE">
         </table>
-        <script>
-            $().ready(function(){
-            
-                $('td').dblclick(function(){
-                    var thisTD = $(this)
 
-                    thisTD.myeval = function() {
-                        let code = this.data('code')
-                        if (code[0]==='=') {
-                            return Function(code.substr(1)).call(this)
-                        }
-                        return code
-                    }
+<script>
 
-                    thisTD.html('<textarea></textarea>');
+function createLATTICE (i, j)
+{
+    var $o = $(`<td id="${i}_${j}"></td>`)
+    $o.i = i
+    $o.j = j
 
-                    let textarea = $(thisTD).children().first()
+    Object.defineProperties($o,  {
+        code:{
+            get: function(){
+                return DATA[this.i][this.j]
+            },
 
-                    textarea.text(thisTD.data('code'))
+            set: function(s){
+                DATA[this.i][this.j] = s
+                SAVE()
+            }
+        }
+    })
 
-                    textarea.keydown(function(e){
-                        if(e.ctrlKey && e.keyCode === 13) {
-                            let code = textarea.val()
-                            thisTD.data('code', code)
+    $o.myeval = function() {
+        let code = this.code
+        if (code[0]==='=') {
+            return Function(code.substr(1)).call(this)
+        }
+        return code
+    }
+    
+    $o.dblclick(function(){
+        var $thisTD = $o
 
-                            var value = thisTD.myeval()
-                            thisTD.text(value)
-                            console.log(thisTD.data('code'))
-                            console.log(value)
-                        }
-                    });
+        var OLDVALUE = $thisTD.text()
 
-                });
-            })
-            
+        //创建一个输入区
+        let $textarea = $thisTD.html('<textarea></textarea>').children().first()
+
+        $textarea.text($thisTD.data('code'))
+
+        $textarea.keydown(function(e){
+            //ctrl+enter
+            if(e.ctrlKey && e.key === 'Enter') {
+                let code = $textarea.val()
+                $thisTD.code = code
+
+                var value = $thisTD.myeval()
+                $thisTD.text(value)
+                console.log(value)
+            }
+            //ESC
+            if('Escape' === e.key) {
+                $thisTD.code =  $textarea.val()
+                $thisTD.text(OLDVALUE)
+            }
+        });
+
+        $textarea.focus()
+    })
+
+    return $o
+}
 
 
-        </script>
-    </body>
+if (!localStorage.getItem('tabledata')){
+    localStorage.setItem('tabledata', 
+        JSON.stringify([['双击此处']]))
+}
+
+DATA = JSON.parse(localStorage.getItem('tabledata'))
+
+LOAD = function () {
+    $.each(DATA,(i,row)=>{
+
+        $(`<tr id="${i}"></tr>`).appendTo('.BIGTABLE')
+
+        $.each(row,(j,col)=>{
+            if(0){
+                let
+                $td = $(`<td id="${i}_${j}"></td>`)
+                        .appendTo($('.BIGTABLE').last())
+                $td.text(col)
+            }
+            else
+            {
+                let $td = createLATTICE(i, j)
+                $td.appendTo($('.BIGTABLE').last())
+                $td.text($td.myeval())
+            }
+        })
+    })
+};LOAD()
+
+SAVE = function(){
+    localStorage.setItem('tabledate', JSON.stringify(DATA))
+}
+
+</script>
+</body>
 </html>
