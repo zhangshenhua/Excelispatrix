@@ -15,6 +15,10 @@
         </table>
 
 <script>
+SAVE = function(){
+    localStorage.setItem('tabledata', JSON.stringify(DATA))
+}
+
 
 function createLATTICE (i, j)
 {
@@ -51,7 +55,7 @@ function createLATTICE (i, j)
         //创建一个输入区
         let $textarea = $thisTD.html('<textarea></textarea>').children().first()
 
-        $textarea.text($thisTD.data('code'))
+        $textarea.text($thisTD.code)
 
         $textarea.keydown(function(e){
             //ctrl+enter
@@ -90,25 +94,14 @@ LOAD = function () {
         $(`<tr id="${i}"></tr>`).appendTo('.BIGTABLE')
 
         $.each(row,(j,col)=>{
-            if(0){
-                let
-                $td = $(`<td id="${i}_${j}"></td>`)
-                        .appendTo($('.BIGTABLE').last())
-                $td.text(col)
-            }
-            else
-            {
-                let $td = createLATTICE(i, j)
-                $td.appendTo($('.BIGTABLE').last())
-                $td.text($td.myeval())
-            }
+            let $td = createLATTICE(i, j)
+            $td.appendTo($('.BIGTABLE').last())
+            $td.text($td.myeval())
         })
     })
 };LOAD()
 
-SAVE = function(){
-    localStorage.setItem('tabledate', JSON.stringify(DATA))
-}
+
 
 </script>
 </body>
