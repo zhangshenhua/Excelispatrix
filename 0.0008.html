@@ -60,7 +60,39 @@ function createLATTICE (i, j)
             set: function(s){
                 this.html(`<pre>${s}</pre>`)
             }
-        }
+        },
+        left: {
+            get: function() {
+                return $$[this.i][this.j-1]
+            },
+            set: function(o) {
+                $$[this.i][this.j-1] = o
+            }
+        },
+        right: {
+            get: function() {
+                return $$[this.i][this.j+1]
+            },
+            set: function(o) {
+                $$[this.i][this.j+1] = o
+            }
+        },
+        up: {
+            get: function() {
+                return $$[this.i-1][this.j]
+            },
+            set: function(o) {
+                $$[this.i-1][this.j] = o
+            }
+        },
+        down: {
+            get: function() {
+                return $$[this.i+1][this.j]
+            },
+            set: function(o) {
+                $$[this.i+1][this.j] = o
+            }
+        },
 
     })
 
