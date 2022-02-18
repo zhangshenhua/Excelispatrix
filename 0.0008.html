@@ -15,10 +15,12 @@
         }
     </style>
     <body>
-        <table class="BIGTABLE">
-        </table>
 
 <script>
+
+$TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+
+
 SAVE = function(){
     localStorage.setItem('tabledata', JSON.stringify(DATA))
 }
@@ -34,6 +36,10 @@ $.fn.extend({
     }
 })
 }
+
+
+
+
 
 function createLATTICE (i, j)
 {
@@ -125,7 +131,7 @@ LOAD = function () {
     //$.AA=[]
     $.each(DATA,(i,row)=>{
 
-        $(`<tr id="${i}"></tr>`).appendTo('.BIGTABLE')
+        $(`<tr id="${i}"></tr>`).appendTo($TABLE)
         //$.AA[i] = []
         $.each(row,(j,col)=>{
             let $td = createLATTICE(i, j)
