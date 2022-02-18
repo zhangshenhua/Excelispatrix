@@ -19,12 +19,21 @@
 <script>
 if (!localStorage.getItem('tabledata')){
     localStorage.setItem('tabledata', 
-        JSON.stringify([['双击此处1'],['双击此处2']]))
+        JSON.stringify([['双击此处11','双击此处12'],
+                        ['双击此处21','双击此处22']]))
 }
 
+// 是一个二维数组，用来存放每个格子的代码
 var DATA = JSON.parse(localStorage.getItem('tabledata'))
 
+// 以单个$为前缀命名的变量用来存放jQuery化的对象
+// $TABLE作为整个表的抓手（handle）
 var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+
+/* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
+    妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
+    打算在LOAD的时候初始化。 */
+var $$ = [];
 
 
 function createLATTICE (i, j)
@@ -113,14 +122,13 @@ function SAVE() {
 
 
 function LOAD() {
-    //$.AA=[]
+    $$ = []
     $.each(DATA, (i, row)=>{
-
+        $$[i] = []
         $(`<tr id="${i}"></tr>`).appendTo($TABLE)
-        //$.AA[i] = []
         $.each(row, (j, col)=>{
             let $td = createLATTICE(i, j)
-
+            $$[i][j] = $td
             $td.appendTo($('.BIGTABLE').last())
             $td.value = $td.myeval()
         })
