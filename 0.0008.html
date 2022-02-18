@@ -17,28 +17,14 @@
     <body>
 
 <script>
-
-$TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
-
-
-SAVE = function(){
-    localStorage.setItem('tabledata', JSON.stringify(DATA))
+if (!localStorage.getItem('tabledata')){
+    localStorage.setItem('tabledata', 
+        JSON.stringify([['双击此处1'],['双击此处2']]))
 }
 
-if(0){
-$.fn.extend({
-    myeval : function() {
-        let code = this.code
-        if (code[0]==='=') {
-            return Function(code.substr(1)).call(this)
-        }
-        return code
-    }
-})
-}
+var DATA = JSON.parse(localStorage.getItem('tabledata'))
 
-
-
+var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
 
 
 function createLATTICE (i, j)
@@ -92,13 +78,15 @@ function createLATTICE (i, j)
         $textarea.keydown(function(e){
             //ctrl+enter
             if(e.ctrlKey && e.key === 'Enter') {
-                let code = $textarea.val()
-                $thisTD.code = code
+                let newcode = $textarea.val()
 
-                var value = $thisTD.myeval()
-                $thisTD.value = value
-                console.log(value)
+                $thisTD.code = newcode
+
+                let newvalue = $thisTD.myeval()
+
+                $thisTD.value = newvalue
             }
+
             //ESC
             if('Escape' === e.key) {
                 $thisTD.code =  $textarea.val()
@@ -119,21 +107,18 @@ function createLATTICE (i, j)
 }
 
 
-if (!localStorage.getItem('tabledata')){
-    localStorage.setItem('tabledata', 
-        JSON.stringify([['双击此处1'],['双击此处2']]))
+function SAVE() {
+    localStorage.setItem('tabledata', JSON.stringify(DATA))
 }
 
-DATA = JSON.parse(localStorage.getItem('tabledata'))
 
-
-LOAD = function () {
+function LOAD() {
     //$.AA=[]
-    $.each(DATA,(i,row)=>{
+    $.each(DATA, (i, row)=>{
 
         $(`<tr id="${i}"></tr>`).appendTo($TABLE)
         //$.AA[i] = []
-        $.each(row,(j,col)=>{
+        $.each(row, (j, col)=>{
             let $td = createLATTICE(i, j)
 
             $td.appendTo($('.BIGTABLE').last())
@@ -141,6 +126,7 @@ LOAD = function () {
         })
     })
 };LOAD()
+
 
 $('body').keydown(e=>{
     console.log(e)
