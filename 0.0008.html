@@ -121,11 +121,11 @@ DATA = JSON.parse(localStorage.getItem('tabledata'))
 
 
 LOAD = function () {
-    $.AA=[]
+    //$.AA=[]
     $.each(DATA,(i,row)=>{
 
         $(`<tr id="${i}"></tr>`).appendTo('.BIGTABLE')
-        $.AA[i] = []
+        //$.AA[i] = []
         $.each(row,(j,col)=>{
             let $td = createLATTICE(i, j)
 
