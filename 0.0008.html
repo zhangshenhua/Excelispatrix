@@ -17,18 +17,52 @@
     <body>
 
 <script>
+/* 我们规定以单个$为前缀命名的变量用来存放jQuery化的对象 */
+
+/* INITDATA 可以说是世界本源了，如果没有这个东西，
+    一个新用户的页面上什么也加载不出来。*/
+const INITDATA = [['双击此处11','双击此处12'],
+                  ['双击此处21','双击此处22']]
+
 if (!localStorage.getItem('tabledata')){
-    localStorage.setItem('tabledata', 
-        JSON.stringify([['双击此处11','双击此处12'],
-                        ['双击此处21','双击此处22']]))
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
 }
 
-// 是一个二维数组，用来存放每个格子的代码
-var DATA = JSON.parse(localStorage.getItem('tabledata'))
+// DATA是一个二维数组，用来存放每个格子的代码
+var DATA;
 
-// 以单个$为前缀命名的变量用来存放jQuery化的对象
 // $TABLE作为整个表的抓手（handle）
 var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+
+//把DATA这个二维数组存到localStorage里
+function SAVE() {
+    localStorage.setItem('tabledata', JSON.stringify(DATA))
+}
+
+//LOAD()说加载就加载，把localstorage里的东西加载到页面上。
+function LOAD() {
+    DATA = JSON.parse(localStorage.getItem('tabledata'))
+    $$ = []
+    $.each(DATA, (i, row)=>{
+        $$[i] = []
+        $(`<tr id="${i}"></tr>`).appendTo($TABLE)
+        $.each(row, (j, col)=>{
+            let $td = createLATTICE(i, j)
+            $$[i][j] = $td
+            $td.appendTo($('.BIGTABLE').last())
+            $td.value = $td.myeval()
+        })
+    })
+};LOAD()
+
+
+//RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
+function RESETALL() {
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+    $TABLE.html('')
+    $$ = []
+    LOAD()
+}
 
 /* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
     妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
@@ -153,24 +187,7 @@ function createLATTICE (i, j)
 }
 
 
-function SAVE() {
-    localStorage.setItem('tabledata', JSON.stringify(DATA))
-}
 
-
-function LOAD() {
-    $$ = []
-    $.each(DATA, (i, row)=>{
-        $$[i] = []
-        $(`<tr id="${i}"></tr>`).appendTo($TABLE)
-        $.each(row, (j, col)=>{
-            let $td = createLATTICE(i, j)
-            $$[i][j] = $td
-            $td.appendTo($('.BIGTABLE').last())
-            $td.value = $td.myeval()
-        })
-    })
-};LOAD()
 
 
 $('body').keydown(e=>{
