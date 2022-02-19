@@ -35,6 +35,8 @@ var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
     打算在LOAD的时候初始化。 */
 var $$ = [];
 
+/* $CUR 指向当前被选中的晶格对象 */
+var $CUR;
 
 function createLATTICE (i, j)
 {
@@ -96,7 +98,11 @@ function createLATTICE (i, j)
 
     })
 
-    
+    $o.selected = function () {
+        $CUR = $o
+        $CUR.addClass('cur')
+    }
+
     $o.myeval = function() {
         let code = this.code
         if (code[0]==='=') {
@@ -140,9 +146,8 @@ function createLATTICE (i, j)
     })
 
     $o.click(function(){
-        $CUR = $o
         $('td.cur').removeClass('cur')
-        $CUR.addClass('cur')
+        $o.selected()
     })
     return $o
 }
