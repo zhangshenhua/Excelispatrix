@@ -34,6 +34,14 @@ var DATA;
 // $TABLE作为整个表的抓手（handle）
 var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
 
+/* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
+    妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
+    打算在LOAD的时候初始化。 */
+    var $$ = [];
+
+/* $CUR 指向当前被选中的晶格对象 */
+var $CUR;
+
 //把DATA这个二维数组存到localStorage里
 function SAVE() {
     localStorage.setItem('tabledata', JSON.stringify(DATA))
@@ -64,14 +72,7 @@ function RESETALL() {
     LOAD()
 }
 
-/* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
-    妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
-    打算在LOAD的时候初始化。 */
-var $$ = [];
-
-/* $CUR 指向当前被选中的晶格对象 */
-var $CUR;
-
+//createLATTICE是晶格对象的工厂
 function createLATTICE (i, j)
 {
     var $o = $(`<td id="${i}_${j}"></td>`)
