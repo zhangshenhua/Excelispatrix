@@ -21,8 +21,13 @@
 
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
-const INITDATA = [['双击此处11','双击此处12'],
-                  ['双击此处21','双击此处22']]
+const INITDATA = [
+    ['双击单元格进行编辑','已完成'],
+    ['在编辑状态下按Ctrl+Enter求值','已完成'],
+    ['在编辑状态下按ESC退出编辑状态','已完成'],
+    ['单元格选中打亮','已完成'],
+    ['用Ctrl+上下左右键在选中格的上下左右插入行或列','伤脑筋'],
+]
 
 if (!localStorage.getItem('tabledata')){
     localStorage.setItem('tabledata', JSON.stringify(INITDATA))
