@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>ExcelispatrixV0.0008</title>
+        <script src="jquery.min.js"></script>
+    </head>
+    <style>
+        td {
+            border-width: 1px;
+            border-style: dotted;
+        }
+        td.cur {
+            border: rgb(0, 14, 206) 2px solid;
+        }
+    </style>
+    <body>
+
+<script>
+/* 我们规定以单个$为前缀命名的变量用来存放jQuery化的对象 */
+
+/* INITDATA 可以说是世界本源了，如果没有这个东西，
+    一个新用户的页面上什么也加载不出来。*/
+const INITDATA = [
+    ['双击单元格进行编辑','已完成'],
+    ['在编辑状态下按Ctrl+Enter求值','已完成'],
+    ['在编辑状态下按ESC退出编辑状态','已完成'],
+    ['单元格选中打亮','已完成'],
+    ['用Ctrl+上下左右键在选中格的上下左右插入行或列','伤脑筋'],
+    ['',''],
+]
+
+if (!localStorage.getItem('tabledata')){
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+}
+
+// DATA是一个二维数组，用来存放每个格子的代码
+var DATA;
+
+// $TABLE作为整个表的抓手（handle）
+var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+
+/* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
+    妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
+    打算在LOAD的时候初始化。 */
+    var $$ = [];
+
+/* $CUR 指向当前被选中的晶格对象 */
+var $CUR;
+
+//把DATA这个二维数组存到localStorage里
+function SAVE() {
+    localStorage.setItem('tabledata', JSON.stringify(DATA))
+}
+
+//LOAD()说加载就加载，把localstorage里的东西加载到页面上。
+function LOAD() {
+    DATA = JSON.parse(localStorage.getItem('tabledata'))
+    $$ = []
+    $.each(DATA, (i, row)=>{
+        $$[i] = []
+        $(`<tr id="${i}"></tr>`).appendTo($TABLE)
+        $.each(row, (j, col)=>{
+            let $td = createLATTICE(i, j)
+            $$[i][j] = $td
+            $td.appendTo($('.BIGTABLE').last())
+            $td.value = $td.myeval()
+        })
+    })
+};LOAD()
+
+
+//RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
+function RESETALL() {
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+    $TABLE.html('')
+    $$ = []
+    LOAD()
+}
+
+//createLATTICE是晶格对象的工厂
+function createLATTICE (i, j)
+{
+    var $o = $(`<td id="${i}_${j}"></td>`)
+    $o.i = i
+    $o.j = j
+
+    Object.defineProperties($o,  {
+        code:{
+            get: function(){
+                return DATA[this.i][this.j]
+            },
+
+            set: function(s){
+                DATA[this.i][this.j] = s
+                SAVE()
+            }
+        },
+        value: {
+            get: function(){
+                return this.text()
+            },
+            set: function(s){
+                this.html(`<pre>${s}</pre>`)
+            }
+        },
+        left: {
+            get: function() {
+                return $$[this.i][this.j-1]
+            },
+            set: function(o) {
+                $$[this.i][this.j-1] = o
+            }
+        },
+        right: {
+            get: function() {
+                return $$[this.i][this.j+1]
+            },
+            set: function(o) {
+                $$[this.i][this.j+1] = o
+            }
+        },
+        up: {
+            get: function() {
+                return $$[this.i-1][this.j]
+            },
+            set: function(o) {
+                $$[this.i-1][this.j] = o
+            }
+        },
+        down: {
+            get: function() {
+                return $$[this.i+1][this.j]
+            },
+            set: function(o) {
+                $$[this.i+1][this.j] = o
+            }
+        },
+
+    })
+
+    $o.selected = function () {
+        $CUR = $o
+        $CUR.addClass('cur')
+    }
+
+    $o.myeval = function() {
+        let code = this.code
+        if (code[0]==='=') {
+            return Function(code.substr(1)).call(this)
+        }
+        return code
+    }
+    
+
+    $o.dblclick(function(){
+        var $thisTD = $o
+
+        var OLDVALUE = $thisTD.value
+
+        //创建一个输入区
+        let $textarea = $thisTD.html(
+            '<div contenteditable="true"><code></code></div>'
+            ).children().first()
+
+        $textarea[0].innerText = $thisTD.code
+
+        $textarea.keydown(function(e){
+            //ctrl+enter
+            if(e.ctrlKey && e.key === 'Enter') {
+                let newcode = $textarea[0].innerText
+
+                $thisTD.code = newcode
+
+                let newvalue = $thisTD.myeval()
+
+                $thisTD.value = newvalue
+            }
+
+            //ESC
+            if('Escape' === e.key) {
+                $thisTD.code =  $textarea[0].innerText
+                $thisTD.value= OLDVALUE
+            }
+
+        });
+
+        $textarea.focus()
+    })
+
+    $o.click(function(){
+        $('td.cur').removeClass('cur')
+        $o.selected()
+    })
+    return $o
+}
+
+
+
+
+
+$('body').keydown(e=>{
+    console.log(e)
+    if(e.ctrlKey){
+        if(e.key==="ArrowUp"){
+
+        }
+        if(e.key==="ArrowDown"){
+            //$('tr').last().clone(true).appendTo('table')
+        }
+        if(e.key==="ArrowLeft"){
+            
+        }
+        if(e.key==="ArrowRight"){
+            
+        }
+    }
+    if(e.key==="ArrowUp"){
+
+    }
+    if(e.key==="ArrowDown"){
+        
+    }
+    if(e.key==="ArrowLeft"){
+        
+    }
+    if(e.key==="ArrowRight"){
+        
+    }
+    
+})
+
+</script>
+</body>
+</html>
