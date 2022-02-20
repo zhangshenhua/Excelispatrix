@@ -1,4 +1,5 @@
 # Excelispatrix
+使用链接 [http://wu-org.gitee.io/excelispatrix/index.html](http://wu-org.gitee.io/excelispatrix/index.html)
 
 #### 介绍
 预备做一个网页。
@@ -13,7 +14,7 @@
 直接在火狐浏览器中打开
 
 #### 使用说明
-还没想好
+使用链接点进去，里面有说面
 
 #### 参与贡献
 
