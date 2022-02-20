@@ -27,6 +27,7 @@ const INITDATA = [
     ['在编辑状态下按ESC退出编辑状态','已完成'],
     ['单元格选中打亮','已完成'],
     ['用Ctrl+上下左右键在选中格的上下左右插入行或列','伤脑筋'],
+    ['',''],
 ]
 
 if (!localStorage.getItem('tabledata')){
@@ -155,17 +156,19 @@ function createLATTICE (i, j)
     $o.dblclick(function(){
         var $thisTD = $o
 
-        var OLDVALUE = $thisTD.text()
+        var OLDVALUE = $thisTD.value
 
         //创建一个输入区
-        let $textarea = $thisTD.html('<textarea></textarea>').children().first()
+        let $textarea = $thisTD.html(
+            '<div contenteditable="true"><code></code></div>'
+            ).children().first()
 
-        $textarea.text($thisTD.code)
+        $textarea[0].innerText = $thisTD.code
 
         $textarea.keydown(function(e){
             //ctrl+enter
             if(e.ctrlKey && e.key === 'Enter') {
-                let newcode = $textarea.val()
+                let newcode = $textarea[0].innerText
 
                 $thisTD.code = newcode
 
@@ -176,7 +179,7 @@ function createLATTICE (i, j)
 
             //ESC
             if('Escape' === e.key) {
-                $thisTD.code =  $textarea.val()
+                $thisTD.code =  $textarea[0].innerText
                 $thisTD.value= OLDVALUE
             }
 
