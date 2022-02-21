@@ -22,12 +22,14 @@
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
 const INITDATA = [
-    ['双击单元格进行编辑','已完成'],
+    ['=return "双击单元格进行编辑"','已完成'],
     ['在编辑状态下按Ctrl+Enter求值','已完成'],
     ['在编辑状态下按ESC退出编辑状态','已完成'],
     ['单元格选中打亮','已完成'],
-    ['用Ctrl+上下左右键在选中格的上下左右插入行或列','伤脑筋'],
-    ['',''],
+    [`=this.css("color","#ff0000")
+return "用Ctrl+上下左右键在选中格的上下左右插入行或列"`,'已实现'],
+    ['=return 1+2+3',''],
+    ['=return `DATA=${JSON.stringify(DATA)}`','']
 ]
 
 if (!localStorage.getItem('tabledata')){
@@ -38,12 +40,12 @@ if (!localStorage.getItem('tabledata')){
 var DATA;
 
 // $TABLE作为整个表的抓手（handle）
-var $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+var $TABLE
 
 /* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
     妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
     打算在LOAD的时候初始化。 */
-    var $$ = [];
+var $$ = [];
 
 /* $CUR 指向当前被选中的晶格对象 */
 var $CUR;
@@ -56,6 +58,8 @@ function SAVE() {
 //LOAD()说加载就加载，把localstorage里的东西加载到页面上。
 function LOAD() {
     DATA = JSON.parse(localStorage.getItem('tabledata'))
+    $('.BIGTABLE').remove()
+    $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
     $$ = []
     $.each(DATA, (i, row)=>{
         $$[i] = []
@@ -192,27 +196,78 @@ function createLATTICE (i, j)
         $('td.cur').removeClass('cur')
         $o.selected()
     })
+
+    $o.insertRowUp = function() {
+        console.log(`在${this.i}行的上面插入一行`)
+        var i = this.i, j = this.j
+        matrixInsertRow(DATA, i, DATA[i])
+        SAVE();LOAD()
+        $$[i+1][j].selected()
+    }
+    $o.insertRowDown = function() {
+        console.log(`在${this.i}行的下面插入一行`)
+        var i = this.i, j = this.j
+        matrixInsertRow(DATA, i+1, DATA[i])
+        SAVE();LOAD()
+        $$[i][j].selected()
+    }
+    $o.insertColLeft = function() {
+        console.log(`在${this.j}列的左面插入一列`)
+        var i = this.i, j = this.j
+        matrixInsertCol(DATA, j)
+        SAVE();LOAD()
+        $$[i][j+1].selected()
+    }
+    $o.insertColRight = function() {
+        console.log(`在${this.j}列的右面插入一列`)
+        var i = this.i, j = this.j
+        matrixInsertCol(DATA, j+1)
+        SAVE();LOAD()
+        $$[i][j].selected()
+    }
     return $o
 }
 
+function arrayInsert(A, i, x='') {
+    /* 在数组A的第i的元素的位置插入x。
+       那么，在一个二维数组中插入一列，也就是对它的每一行干一遍这个事情。*/
+    A.splice(i, 0, x)
+    return A
+}
 
+function makeArray(n, x=''){
+    return new Array(n).fill(x)
+}
 
+function matrixInsertRow(A, i, X=undefined) {
+    if(X) {
+        return arrayInsert(A, i, X)
+    }
+    else {
+        return arrayInsert(A, i, A[i])
+    }
+}
 
+function matrixInsertCol(A, i, x=0) {
+    A.forEach(
+        row=>arrayInsert(row, i, x))
+    return A
+}
 
 $('body').keydown(e=>{
     console.log(e)
     if(e.ctrlKey){
         if(e.key==="ArrowUp"){
-
+            $CUR.insertRowUp()
         }
         if(e.key==="ArrowDown"){
-            //$('tr').last().clone(true).appendTo('table')
+            $CUR.insertRowDown()
         }
         if(e.key==="ArrowLeft"){
-            
+            $CUR.insertColLeft()
         }
         if(e.key==="ArrowRight"){
-            
+            $CUR.insertColRight()
         }
     }
     if(e.key==="ArrowUp"){
