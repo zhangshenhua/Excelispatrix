@@ -246,7 +246,7 @@ function matrixInsertRow(A, i, X=undefined) {
     }
 }
 
-function matrixInsertCol(A, i, x='') {
+function matrixInsertCol(A, i, x=0) {
     A.forEach(
         row=>arrayInsert(row, i, x))
     return A
