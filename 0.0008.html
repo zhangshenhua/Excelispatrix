@@ -192,27 +192,55 @@ function createLATTICE (i, j)
         $('td.cur').removeClass('cur')
         $o.selected()
     })
+
+    $o.insertRowUp = function() {
+        console.log(`在${this.i}行的上面插入一行`)
+
+    }
+    $o.insertRowDown = function() {
+        console.log(`在${this.i}行的下面插入一行`)
+
+    }
+    $o.insertColLeft = function() {
+        console.log(`在${this.j}列的左面插入一列`)
+
+    }
+    $o.insertColRight = function() {
+        console.log(`在${this.j}列的右面插入一列`)
+
+    }
     return $o
 }
 
+function arrayInsert(A, i, x='') {
+    /* 在数组A的第i的元素的位置插入x。
+       那么，在一个二维数组中插入一列，也就是对它的每一行干一遍这个事情。*/
+    A.splice(i, 0, x)
+    return A
+}
 
+function makeArray(n, x=''){
 
+}
 
+function matrixInsertRow(A, i) {
+    
+}
 
 $('body').keydown(e=>{
     console.log(e)
     if(e.ctrlKey){
         if(e.key==="ArrowUp"){
-
+            $CUR.insertRowUp()
         }
         if(e.key==="ArrowDown"){
-            //$('tr').last().clone(true).appendTo('table')
+            $CUR.insertRowDown()
         }
         if(e.key==="ArrowLeft"){
-            
+            $CUR.insertColLeft()
         }
         if(e.key==="ArrowRight"){
-            
+            $CUR.insertColRight()
         }
     }
     if(e.key==="ArrowUp"){
