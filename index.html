@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>ExcelispatrixV0.0008</title>
+        <title>ExcelispatrixV0.0009</title>
         <script src="jquery.min.js"></script>
     </head>
     <style>
@@ -13,6 +13,28 @@
         td.cur {
             border: rgb(0, 14, 206) 2px solid;
         }
+        .valuediv {
+            word-break:break-all;
+            max-width:500px;
+            overflow-x: auto;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            /*v-text："currentData.grantDetail"*/
+        }
+        .codedivopen {
+            visibility: visible;
+            color: #d4d4d4;
+            background-color: rgb(29, 26, 26);
+            font-family: Consolas, 'Courier New', monospace;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 19px;
+            white-space: pre;
+        }
+        .codedivclose {
+            visibility: collapse;
+        }
+
     </style>
     <body>
 
@@ -22,14 +44,25 @@
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
 const INITDATA = [
-    ['=return "双击单元格进行编辑"','已完成'],
-    ['在编辑状态下按Ctrl+Enter求值','已完成'],
-    ['在编辑状态下按ESC退出编辑状态','已完成'],
-    ['单元格选中打亮','已完成'],
-    [`=this.css("color","#ff0000")
-return "用Ctrl+上下左右键在选中格的上下左右插入行或列"`,'已实现'],
-    ['=return 1+2+3',''],
-    ['=return `DATA=${JSON.stringify(DATA)}`','']
+    ['说明书:'],
+    ['操作','效果','完成度'],
+    ['点击单元格','=return "选中单元格"','已完成'],
+    ['双击单元格','=return "打开单元格的编辑框"','已完成'],
+    ['Ctrl+Enter键', '单元格求值','已完成'],
+    ['ESC键', '退出编辑状态且不求值','已完成'],
+    ['Ctrl+上下左右键', `=this.css("color","#ff0000")
+return "在选中格的上下左右插入行或列"`,'已实现'],
+    ['测试1', '=return 1+2+3'],
+    ['多行文本测试', 
+    `第1行
+第2行
+第3行`,''],
+    ['长行测试', 
+        '长行测试长行测试行测试长行测试长行测试\n'+
+        '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'+
+        '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'],
+    ["时钟","=\nsetInterval(()=>{this.value=(new Date()).toString()},1000)"]
+    ['实存', '=return JSON.stringify(DATA)',''],
 ]
 
 if (!localStorage.getItem('tabledata')){
@@ -85,10 +118,14 @@ function RESETALL() {
 //createLATTICE是晶格对象的工厂
 function createLATTICE (i, j)
 {
-    var $o = $(`<td id="${i}_${j}"></td>`)
+    var $o = $(
+        `<td id="${i}_${j}">`
+            +'<div class="valuediv"></div>'
+            //+'<div class="codedivclose" contenteditable="true"><code></code></div>'
+        +'</td>')
     $o.i = i
     $o.j = j
-
+    
     Object.defineProperties($o,  {
         code:{
             get: function(){
@@ -102,10 +139,10 @@ function createLATTICE (i, j)
         },
         value: {
             get: function(){
-                return this.text()
+                return this.children(".valuediv").text()
             },
             set: function(s){
-                this.html(`<pre>${s}</pre>`)
+                this.children(".valuediv").html(`<pre>${s}</pre>`)
             }
         },
         left: {
@@ -163,11 +200,12 @@ function createLATTICE (i, j)
         var OLDVALUE = $thisTD.value
 
         //创建一个输入区
-        let $textarea = $thisTD.html(
-            '<div contenteditable="true"><code></code></div>'
-            ).children().first()
+        let $textarea = $(
+            '<div class="codedivopen" contenteditable="true"><code></code></div>'
+            ).appendTo($thisTD)
 
-        $textarea[0].innerText = $thisTD.code
+
+        $textarea[0].innerText=($thisTD.code) 
 
         $textarea.keydown(function(e){
             //ctrl+enter
@@ -179,12 +217,16 @@ function createLATTICE (i, j)
                 let newvalue = $thisTD.myeval()
 
                 $thisTD.value = newvalue
+
+                $textarea.remove()
             }
 
             //ESC
             if('Escape' === e.key) {
                 $thisTD.code =  $textarea[0].innerText
                 $thisTD.value= OLDVALUE
+
+                $textarea.remove()
             }
 
         });
@@ -224,6 +266,13 @@ function createLATTICE (i, j)
         matrixInsertCol(DATA, j+1)
         SAVE();LOAD()
         $$[i][j].selected()
+    }
+
+    $o.hideCode = function () {
+
+    }
+    $o.showCode = function () {
+
     }
     return $o
 }
