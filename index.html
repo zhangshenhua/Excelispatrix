@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>ExcelispatrixV0.0009</title>
+        <title>ExcelispatrixV0.001</title>
         <script src="jquery.min.js"></script>
     </head>
     <style>
@@ -47,14 +47,28 @@
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
 const INITDATA = [
+    ///*
+    [`=
+this.attr('colspan','3')
+return "<center><a href='https://gitee.com/wu-org/excelispatrix'>本项目Gitee链接</a></center>"
+    `],
+    //*/
     ["=\nthis.attr('colspan','3')\nreturn '说明书:'"],
     ['操作','效果','完成度'],
     ['点击单元格','=return "选中单元格"','已完成'],
     ['双击单元格','=return "打开单元格的编辑框"','已完成'],
     ['Ctrl+Enter键', '单元格求值','已完成'],
     ['ESC键', '退出编辑状态且不求值','已完成'],
-    ['Ctrl+上下左右键', `=this.css("color","#ff0000")
-return "在选中格的上下左右插入行或列"`,'已实现'],
+    ['Ctrl+↑', `=this.css("color","#ff0000")
+return "在选中格的上方插入一行"`,'已实现'],
+    ['Ctrl+↓', `=this.css("color","#ff0000")
+return "在选中格的下方插入一行"`,'已实现'],
+    ['Ctrl+←', `=this.css("color","#ff0000")
+return "在选中格的左边插入一格"`,'已实现'],
+    ['Ctrl+→', `=this.css("color","#ff0000")
+return "在选中格的右边插入一格"`,'已实现'],
+    ['Ctrl+k', `=this.css("color","#ff0000")
+return "删除选中单元格"`,'已实现'],
     ['测试1', '=return 1+2+3'],
     ['多行文本测试', 
     `第1行
@@ -131,7 +145,7 @@ function createLATTICE (i, j)
 {
     var $o = $(
         `<td id="${i}_${j}">`
-            +'<div class="valuediv"></div>'
+            +'<div class="valuediv" contenteditable="false"></div>'
             //+'<div class="codedivclose" contenteditable="true"><code></code></div>'
         +'</td>')
     $o.i = i
@@ -192,8 +206,11 @@ function createLATTICE (i, j)
     })
 
     $o.selected = function () {
+        if($CUR===$o)return;
         $CUR = $o
         $CUR.addClass('cur')
+        $CUR.children('.valuediv')[0].focus()
+        
     }
 
     $o.myeval = function() {
@@ -249,7 +266,15 @@ function createLATTICE (i, j)
         $('td.cur').removeClass('cur')
         $o.selected()
     })
-
+if(0){
+    $o.keydown(function(e) {
+        console.log('$o.keydown')
+        //ctrl+k
+        if(e.ctrlKey && e.key === 'k') {
+            $o.destroy()
+        }
+    })
+}
     $o.insertRowUp = function() {
         console.log(`在${this.i}行的上面插入一行`)
         var i = this.i, j = this.j
@@ -265,20 +290,46 @@ function createLATTICE (i, j)
         $$[i][j].selected()
     }
     $o.insertColLeft = function() {
-        console.log(`在${this.j}列的左面插入一列`)
         var i = this.i, j = this.j
-        matrixInsertCol(DATA, j)
+        console.log(`在${i}行${j}列的左边插入一格`)
+        arrayInsert(DATA[i], j)
         SAVE();LOAD()
         $$[i][j+1].selected()
     }
     $o.insertColRight = function() {
-        console.log(`在${this.j}列的右面插入一列`)
         var i = this.i, j = this.j
-        matrixInsertCol(DATA, j+1)
+        console.log(`在${i}行${j}列的右边插入一格`)
+        arrayInsert(DATA[i], j+1)
         SAVE();LOAD()
         $$[i][j].selected()
     }
-
+    $o.destroy = function() {
+        var i = this.i, j = this.j
+        console.log(`删除${i}行${j}列的格`)
+        //删除j位的格
+        DATA[i].splice(j, 1); 
+        //如果这行没有元素了，这行也要删掉。
+        if(!DATA[i].length) DATA.splice(i, 1);
+        //如果删没了，则用INITDATA重新初始化
+        if(!DATA.length) {
+            RESETALL()
+    
+        } else {
+            //写localstorage并重新加载数据
+            SAVE();LOAD()
+        }
+        //决定下个焦点在哪个格子
+        if($$[i]) {
+            if($$[i][j]){//若此格存即选此格
+                $$[i][j].selected()
+            } else if($$[i][j-1]) {//此格虽无，左格尚存，即选左格。
+                $$[i][j-1].selected()
+            }
+        } else {
+            $$[i-1][$$[i-1].length-1].selected()
+        }
+        window.event.preventDefault()
+    }
     $o.hideCode = function () {
 
     }
@@ -328,6 +379,9 @@ $('body').keydown(e=>{
         }
         if(e.key==="ArrowRight"){
             $CUR.insertColRight()
+        }
+        if(e.key === 'k') {
+            $CUR.destroy()
         }
     }
     if(e.key==="ArrowUp"){

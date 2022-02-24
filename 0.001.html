@@ -47,6 +47,12 @@
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
 const INITDATA = [
+    ///*
+    [`=
+this.attr('colspan','3')
+return "<center><a href='https://gitee.com/wu-org/excelispatrix'>本项目Gitee链接</a></center>"
+    `],
+    //*/
     ["=\nthis.attr('colspan','3')\nreturn '说明书:'"],
     ['操作','效果','完成度'],
     ['点击单元格','=return "选中单元格"','已完成'],
@@ -139,7 +145,7 @@ function createLATTICE (i, j)
 {
     var $o = $(
         `<td id="${i}_${j}">`
-            +'<div class="valuediv" contenteditable="true"></div>'
+            +'<div class="valuediv" contenteditable="false"></div>'
             //+'<div class="codedivclose" contenteditable="true"><code></code></div>'
         +'</td>')
     $o.i = i
@@ -200,10 +206,11 @@ function createLATTICE (i, j)
     })
 
     $o.selected = function () {
+        if($CUR===$o)return;
         $CUR = $o
         $CUR.addClass('cur')
         $CUR.children('.valuediv')[0].focus()
-        return
+        
     }
 
     $o.myeval = function() {
@@ -259,7 +266,7 @@ function createLATTICE (i, j)
         $('td.cur').removeClass('cur')
         $o.selected()
     })
-
+if(0){
     $o.keydown(function(e) {
         console.log('$o.keydown')
         //ctrl+k
@@ -267,7 +274,7 @@ function createLATTICE (i, j)
             $o.destroy()
         }
     })
-
+}
     $o.insertRowUp = function() {
         console.log(`在${this.i}行的上面插入一行`)
         var i = this.i, j = this.j
@@ -372,6 +379,9 @@ $('body').keydown(e=>{
         }
         if(e.key==="ArrowRight"){
             $CUR.insertColRight()
+        }
+        if(e.key === 'k') {
+            $CUR.destroy()
         }
     }
     if(e.key==="ArrowUp"){
