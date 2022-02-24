@@ -8,17 +8,20 @@
     <style>
         td {
             border-width: 1px;
-            border-style: dotted;
+            border-style: none;
+            max-width:500px;
+            min-width: 50px;
         }
         td.cur {
             border: rgb(0, 14, 206) 2px solid;
         }
         .valuediv {
             word-break:break-all;
-            max-width:500px;
+            
             overflow-x: auto;
             overflow-y: auto;
             scroll-behavior: smooth;
+            background-color: rgb(235, 235, 236);
             /*v-text："currentData.grantDetail"*/
         }
         .codedivopen {
@@ -44,7 +47,7 @@
 /* INITDATA 可以说是世界本源了，如果没有这个东西，
     一个新用户的页面上什么也加载不出来。*/
 const INITDATA = [
-    ['说明书:'],
+    ["=\nthis.attr('colspan','3')\nreturn '说明书:'"],
     ['操作','效果','完成度'],
     ['点击单元格','=return "选中单元格"','已完成'],
     ['双击单元格','=return "打开单元格的编辑框"','已完成'],
@@ -61,7 +64,13 @@ return "在选中格的上下左右插入行或列"`,'已实现'],
         '长行测试长行测试行测试长行测试长行测试\n'+
         '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'+
         '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'],
-    ["时钟","=\nsetInterval(()=>{this.value=(new Date()).toString()},1000)"],
+    ["时钟",
+    `=
+setInterval(()=>{
+    this.value=(new Date()).toString()
+    this.css('color','#ff0000')
+    this.animate({"color": "#ffffff"}, 500)
+},1000)`],
     ['实存', '=return JSON.stringify(DATA)',''],
     ['一些功能按钮',`<button onclick="RESETALL();">重置为INITDATA</button>
 <button>随便啥</button>`],
