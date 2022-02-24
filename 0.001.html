@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>ExcelispatrixV0.001</title>
+        <script src="jquery.min.js"></script>
+    </head>
+    <style>
+        td {
+            border-width: 1px;
+            border-style: none;
+            max-width:500px;
+            min-width: 50px;
+        }
+        td.cur {
+            border: rgb(0, 14, 206) 2px solid;
+        }
+        .valuediv {
+            word-break:break-all;
+            
+            overflow-x: auto;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-color: rgb(235, 235, 236);
+            /*v-text："currentData.grantDetail"*/
+        }
+        .codedivopen {
+            visibility: visible;
+            color: #d4d4d4;
+            background-color: rgb(29, 26, 26);
+            font-family: Consolas, 'Courier New', monospace;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 19px;
+            white-space: pre;
+        }
+        .codedivclose {
+            visibility: collapse;
+        }
+
+    </style>
+    <body>
+
+<script>
+/* 我们规定以单个$为前缀命名的变量用来存放jQuery化的对象 */
+
+/* INITDATA 可以说是世界本源了，如果没有这个东西，
+    一个新用户的页面上什么也加载不出来。*/
+const INITDATA = [
+    ["=\nthis.attr('colspan','3')\nreturn '说明书:'"],
+    ['操作','效果','完成度'],
+    ['点击单元格','=return "选中单元格"','已完成'],
+    ['双击单元格','=return "打开单元格的编辑框"','已完成'],
+    ['Ctrl+Enter键', '单元格求值','已完成'],
+    ['ESC键', '退出编辑状态且不求值','已完成'],
+    ['Ctrl+↑', `=this.css("color","#ff0000")
+return "在选中格的上方插入一行"`,'已实现'],
+    ['Ctrl+↓', `=this.css("color","#ff0000")
+return "在选中格的下方插入一行"`,'已实现'],
+    ['Ctrl+←', `=this.css("color","#ff0000")
+return "在选中格的左边插入一格"`,'已实现'],
+    ['Ctrl+→', `=this.css("color","#ff0000")
+return "在选中格的右边插入一格"`,'已实现'],
+    ['测试1', '=return 1+2+3'],
+    ['多行文本测试', 
+    `第1行
+第2行
+第3行`,''],
+    ['长行测试', 
+        '长行测试长行测试行测试长行测试长行测试\n'+
+        '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'+
+        '长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试长行测试长行测试行测试长行测试长行测试\n'],
+    ["时钟",
+    `=
+setInterval(()=>{
+    this.value=(new Date()).toString()
+    this.css('color','#ff0000')
+    this.animate({"color": "#ffffff"}, 500)
+},1000)`],
+    ['实存', '=return JSON.stringify(DATA)',''],
+    ['一些功能按钮',`<button onclick="RESETALL();">重置为INITDATA</button>
+<button>随便啥</button>`],
+]
+
+if (!localStorage.getItem('tabledata')){
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+}
+
+// DATA是一个二维数组，用来存放每个格子的代码
+var DATA;
+
+// $TABLE作为整个表的抓手（handle）
+var $TABLE
+
+/* $$也是个二维数组，用来存放所有从createLATTICE里生产出来的晶格对象
+    妄图在【添加行】与【添加列】等操作中提供些许抓手以及便利,
+    打算在LOAD的时候初始化。 */
+var $$ = [];
+
+/* $CUR 指向当前被选中的晶格对象 */
+var $CUR;
+
+//把DATA这个二维数组存到localStorage里
+function SAVE() {
+    localStorage.setItem('tabledata', JSON.stringify(DATA))
+}
+
+//LOAD()说加载就加载，把localstorage里的东西加载到页面上。
+function LOAD() {
+    DATA = JSON.parse(localStorage.getItem('tabledata'))
+    $('.BIGTABLE').remove()
+    $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
+    $$ = []
+    $.each(DATA, (i, row)=>{
+        $$[i] = []
+        $(`<tr id="${i}"></tr>`).appendTo($TABLE)
+        $.each(row, (j, col)=>{
+            let $td = createLATTICE(i, j)
+            $$[i][j] = $td
+            $td.appendTo($('.BIGTABLE').last())
+            $td.value = $td.myeval()
+        })
+    })
+};LOAD()
+
+
+//RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
+function RESETALL() {
+    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+    $TABLE.html('')
+    $$ = []
+    LOAD()
+}
+
+//createLATTICE是晶格对象的工厂
+function createLATTICE (i, j)
+{
+    var $o = $(
+        `<td id="${i}_${j}">`
+            +'<div class="valuediv"></div>'
+            //+'<div class="codedivclose" contenteditable="true"><code></code></div>'
+        +'</td>')
+    $o.i = i
+    $o.j = j
+    
+    Object.defineProperties($o,  {
+        code:{
+            get: function(){
+                return DATA[this.i][this.j]
+            },
+
+            set: function(s){
+                DATA[this.i][this.j] = s
+                SAVE()
+            }
+        },
+        value: {
+            get: function(){
+                return this.children(".valuediv").text()
+            },
+            set: function(s){
+                this.children(".valuediv").html(`<pre>${s}</pre>`)
+            }
+        },
+        left: {
+            get: function() {
+                return $$[this.i][this.j-1]
+            },
+            set: function(o) {
+                $$[this.i][this.j-1] = o
+            }
+        },
+        right: {
+            get: function() {
+                return $$[this.i][this.j+1]
+            },
+            set: function(o) {
+                $$[this.i][this.j+1] = o
+            }
+        },
+        up: {
+            get: function() {
+                return $$[this.i-1][this.j]
+            },
+            set: function(o) {
+                $$[this.i-1][this.j] = o
+            }
+        },
+        down: {
+            get: function() {
+                return $$[this.i+1][this.j]
+            },
+            set: function(o) {
+                $$[this.i+1][this.j] = o
+            }
+        },
+
+    })
+
+    $o.selected = function () {
+        $CUR = $o
+        $CUR.addClass('cur')
+    }
+
+    $o.myeval = function() {
+        let code = this.code
+        if (code[0]==='=') {
+            return Function(code.substr(1)).call(this)
+        }
+        return code
+    }
+    
+
+    $o.dblclick(function(){
+        var $thisTD = $o
+
+        var OLDVALUE = $thisTD.value
+
+        //创建一个输入区
+        let $textarea = $(
+            '<div class="codedivopen" contenteditable="true"><code></code></div>'
+            ).appendTo($thisTD)
+
+
+        $textarea[0].innerText=($thisTD.code) 
+
+        $textarea.keydown(function(e){
+            //ctrl+enter
+            if(e.ctrlKey && e.key === 'Enter') {
+                let newcode = $textarea[0].innerText
+
+                $thisTD.code = newcode
+
+                let newvalue = $thisTD.myeval()
+
+                $thisTD.value = newvalue
+
+                $textarea.remove()
+            }
+
+            //ESC
+            if('Escape' === e.key) {
+                $thisTD.code =  $textarea[0].innerText
+                $thisTD.value= OLDVALUE
+
+                $textarea.remove()
+            }
+
+        });
+
+        $textarea.focus()
+    })
+
+    $o.click(function(){
+        $('td.cur').removeClass('cur')
+        $o.selected()
+    })
+
+    $o.insertRowUp = function() {
+        console.log(`在${this.i}行的上面插入一行`)
+        var i = this.i, j = this.j
+        matrixInsertRow(DATA, i, DATA[i])
+        SAVE();LOAD()
+        $$[i+1][j].selected()
+    }
+    $o.insertRowDown = function() {
+        console.log(`在${this.i}行的下面插入一行`)
+        var i = this.i, j = this.j
+        matrixInsertRow(DATA, i+1, DATA[i])
+        SAVE();LOAD()
+        $$[i][j].selected()
+    }
+    $o.insertColLeft = function() {
+        var i = this.i, j = this.j
+        console.log(`在${i}行${j}列的左边插入一格`)
+        arrayInsert(DATA[i], j)
+        SAVE();LOAD()
+        $$[i][j+1].selected()
+    }
+    $o.insertColRight = function() {
+        var i = this.i, j = this.j
+        console.log(`在${i}行${j}列的右边插入一格`)
+        arrayInsert(DATA[i], j+1)
+        SAVE();LOAD()
+        $$[i][j].selected()
+    }
+
+    $o.hideCode = function () {
+
+    }
+    $o.showCode = function () {
+
+    }
+    return $o
+}
+
+function arrayInsert(A, i, x='') {
+    /* 在数组A的第i的元素的位置插入x。
+       那么，在一个二维数组中插入一列，也就是对它的每一行干一遍这个事情。*/
+    A.splice(i, 0, x)
+    return A
+}
+
+function makeArray(n, x=''){
+    return new Array(n).fill(x)
+}
+
+function matrixInsertRow(A, i, X=undefined) {
+    if(X) {
+        return arrayInsert(A, i, X)
+    }
+    else {
+        return arrayInsert(A, i, A[i])
+    }
+}
+
+function matrixInsertCol(A, i, x=0) {
+    A.forEach(
+        row=>arrayInsert(row, i, x))
+    return A
+}
+
+$('body').keydown(e=>{
+    console.log(e)
+    if(e.ctrlKey){
+        if(e.key==="ArrowUp"){
+            $CUR.insertRowUp()
+        }
+        if(e.key==="ArrowDown"){
+            $CUR.insertRowDown()
+        }
+        if(e.key==="ArrowLeft"){
+            $CUR.insertColLeft()
+        }
+        if(e.key==="ArrowRight"){
+            $CUR.insertColRight()
+        }
+    }
+    if(e.key==="ArrowUp"){
+
+    }
+    if(e.key==="ArrowDown"){
+        
+    }
+    if(e.key==="ArrowLeft"){
+        
+    }
+    if(e.key==="ArrowRight"){
+        
+    }
+    
+})
+
+</script>
+</body>
+</html>
