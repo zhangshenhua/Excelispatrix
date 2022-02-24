@@ -61,6 +61,8 @@ return "在选中格的下方插入一行"`,'已实现'],
 return "在选中格的左边插入一格"`,'已实现'],
     ['Ctrl+→', `=this.css("color","#ff0000")
 return "在选中格的右边插入一格"`,'已实现'],
+    ['Ctrl+k', `=this.css("color","#ff0000")
+return "删除选中单元格"`,'已实现'],
     ['测试1', '=return 1+2+3'],
     ['多行文本测试', 
     `第1行
@@ -137,7 +139,7 @@ function createLATTICE (i, j)
 {
     var $o = $(
         `<td id="${i}_${j}">`
-            +'<div class="valuediv"></div>'
+            +'<div class="valuediv" contenteditable="true"></div>'
             //+'<div class="codedivclose" contenteditable="true"><code></code></div>'
         +'</td>')
     $o.i = i
@@ -200,6 +202,8 @@ function createLATTICE (i, j)
     $o.selected = function () {
         $CUR = $o
         $CUR.addClass('cur')
+        $CUR.children('.valuediv')[0].focus()
+        return
     }
 
     $o.myeval = function() {
@@ -256,6 +260,14 @@ function createLATTICE (i, j)
         $o.selected()
     })
 
+    $o.keydown(function(e) {
+        console.log('$o.keydown')
+        //ctrl+k
+        if(e.ctrlKey && e.key === 'k') {
+            $o.destroy()
+        }
+    })
+
     $o.insertRowUp = function() {
         console.log(`在${this.i}行的上面插入一行`)
         var i = this.i, j = this.j
@@ -284,7 +296,33 @@ function createLATTICE (i, j)
         SAVE();LOAD()
         $$[i][j].selected()
     }
-
+    $o.destroy = function() {
+        var i = this.i, j = this.j
+        console.log(`删除${i}行${j}列的格`)
+        //删除j位的格
+        DATA[i].splice(j, 1); 
+        //如果这行没有元素了，这行也要删掉。
+        if(!DATA[i].length) DATA.splice(i, 1);
+        //如果删没了，则用INITDATA重新初始化
+        if(!DATA.length) {
+            RESETALL()
+    
+        } else {
+            //写localstorage并重新加载数据
+            SAVE();LOAD()
+        }
+        //决定下个焦点在哪个格子
+        if($$[i]) {
+            if($$[i][j]){//若此格存即选此格
+                $$[i][j].selected()
+            } else if($$[i][j-1]) {//此格虽无，左格尚存，即选左格。
+                $$[i][j-1].selected()
+            }
+        } else {
+            $$[i-1][$$[i-1].length-1].selected()
+        }
+        window.event.preventDefault()
+    }
     $o.hideCode = function () {
 
     }
