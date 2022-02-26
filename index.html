@@ -3,7 +3,7 @@
     <head>
         <meta charset='utf-8'>
         <title>ExcelispatrixV0.001</title>
-        <script src="jquery.min.js"></script>
+        <script src="jquery.js"></script>
     </head>
     <style>
         td {
@@ -202,19 +202,29 @@ function createLATTICE (i, j)
                 $$[this.i+1][this.j] = o
             }
         },
-
+        RowArr: {
+            get: function() {
+                return $$[this.i]
+            }
+        },
+        ColArr: {
+            get: function() {
+                return $$.map(_=>{return _[this.j]})
+            }
+        },
     })
 
     $o.selected = function () {
         if($CUR===$o)return;
         $CUR = $o
         $CUR.addClass('cur')
-        $CUR.children('.valuediv')[0].focus()
-        
+        $o[0].focus()
+        $o[0].scrollIntoView()
+        //window.event.preventDefault()
     }
 
-    $o.myeval = function() {
-        let code = this.code
+    $o.myeval = function(othercode='') {
+        let code = othercode? othercode : this.code
         if (code[0]==='=') {
             return Function(code.substr(1)).call(this)
         }
@@ -280,28 +290,28 @@ if(0){
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i, DATA[i])
         SAVE();LOAD()
-        $$[i+1][j].selected()
+        $$[i][j].selected()
     }
     $o.insertRowDown = function() {
         console.log(`在${this.i}行的下面插入一行`)
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i+1, DATA[i])
         SAVE();LOAD()
-        $$[i][j].selected()
+        $$[i+1][j].selected()
     }
     $o.insertColLeft = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的左边插入一格`)
         arrayInsert(DATA[i], j)
         SAVE();LOAD()
-        $$[i][j+1].selected()
+        $$[i][j].selected()
     }
     $o.insertColRight = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的右边插入一格`)
         arrayInsert(DATA[i], j+1)
         SAVE();LOAD()
-        $$[i][j].selected()
+        $$[i][j+1].selected()
     }
     $o.destroy = function() {
         var i = this.i, j = this.j
@@ -319,16 +329,16 @@ if(0){
             SAVE();LOAD()
         }
         //决定下个焦点在哪个格子
-        if($$[i]) {
+        if($$[i]) {//若此行存
             if($$[i][j]){//若此格存即选此格
                 $$[i][j].selected()
             } else if($$[i][j-1]) {//此格虽无，左格尚存，即选左格。
                 $$[i][j-1].selected()
             }
-        } else {
+        } else {//若此行无，则选中上一行之尾格
             $$[i-1][$$[i-1].length-1].selected()
         }
-        window.event.preventDefault()
+        
     }
     $o.hideCode = function () {
 
@@ -382,6 +392,14 @@ $('body').keydown(e=>{
         }
         if(e.key === 'k') {
             $CUR.destroy()
+        }
+        //windows的C-c C-v等键还是应当使其发挥原有的作用
+        if(!(0
+            || e.key === 'Control'
+            || e.key === 'c' 
+            || e.key === 'v' 
+            )) {
+            window.event.preventDefault()
         }
     }
     if(e.key==="ArrowUp"){
