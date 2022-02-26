@@ -202,7 +202,16 @@ function createLATTICE (i, j)
                 $$[this.i+1][this.j] = o
             }
         },
-
+        RowArr: {
+            get: function() {
+                return $$[this.i]
+            }
+        },
+        ColArr: {
+            get: function() {
+                return $$.map(_=>{return _[this.j]})
+            }
+        },
     })
 
     $o.selected = function () {
@@ -214,8 +223,8 @@ function createLATTICE (i, j)
         //window.event.preventDefault()
     }
 
-    $o.myeval = function() {
-        let code = this.code
+    $o.myeval = function(othercode='') {
+        let code = othercode? othercode : this.code
         if (code[0]==='=') {
             return Function(code.substr(1)).call(this)
         }
@@ -384,7 +393,14 @@ $('body').keydown(e=>{
         if(e.key === 'k') {
             $CUR.destroy()
         }
-        window.event.preventDefault()
+        //windows的C-c C-v等键还是应当使其发挥原有的作用
+        if(!(0
+            || e.key === 'Control'
+            || e.key === 'c' 
+            || e.key === 'v' 
+            )) {
+            window.event.preventDefault()
+        }
     }
     if(e.key==="ArrowUp"){
 
