@@ -91,7 +91,7 @@ setInterval(()=>{
 ]
 
 if (!localStorage.getItem('tabledata')){
-    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
+    RENDER(INITDATA)
 }
 
 // DATA是一个二维数组，用来存放每个格子的代码
@@ -109,17 +109,17 @@ var $$ = [];
 var $CUR;
 
 //把DATA这个二维数组存到localStorage里
-function SAVE() {
-    localStorage.setItem('tabledata', JSON.stringify(DATA))
+function SAVE(slot='tabledata', data=DATA, ) {
+    console.log(`SAVE到 ${slot} 中`)
+    localStorage.setItem(slot, JSON.stringify(data))
 }
 
-//LOAD()说加载就加载，把localstorage里的东西加载到页面上。
-function LOAD() {
-    DATA = JSON.parse(localStorage.getItem('tabledata'))
+//渲染
+function RENDER (data=DATA) {
     $('.BIGTABLE').remove()
     $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
     $$ = []
-    $.each(DATA, (i, row)=>{
+    $.each(data, (i, row)=>{
         $$[i] = []
         $(`<tr id="${i}"></tr>`).appendTo($TABLE)
         $.each(row, (j, col)=>{
@@ -129,7 +129,14 @@ function LOAD() {
             $td.value = $td.myeval()
         })
     })
-};LOAD()
+}
+
+//把localstorage里的东西加载到页面上。
+function LOAD(slot='tabledata', ) {
+    DATA=JSON.parse(localStorage.getItem(slot))
+    RENDER(DATA)
+}
+LOAD()
 
 
 //RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
@@ -159,7 +166,7 @@ function createLATTICE (i, j)
 
             set: function(s){
                 DATA[this.i][this.j] = s
-                SAVE()
+                //SAVE()
             }
         },
         value: {
@@ -289,28 +296,28 @@ if(0){
         console.log(`在${this.i}行的上面插入一行`)
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i, DATA[i])
-        SAVE();LOAD()
+        RENDER()
         $$[i][j].selected()
     }
     $o.insertRowDown = function() {
         console.log(`在${this.i}行的下面插入一行`)
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i+1, DATA[i])
-        SAVE();LOAD()
+        RENDER()
         $$[i+1][j].selected()
     }
     $o.insertColLeft = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的左边插入一格`)
         arrayInsert(DATA[i], j)
-        SAVE();LOAD()
+        RENDER()
         $$[i][j].selected()
     }
     $o.insertColRight = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的右边插入一格`)
         arrayInsert(DATA[i], j+1)
-        SAVE();LOAD()
+        RENDER()
         $$[i][j+1].selected()
     }
     $o.destroy = function() {
@@ -326,7 +333,7 @@ if(0){
     
         } else {
             //写localstorage并重新加载数据
-            SAVE();LOAD()
+            RENDER()
         }
         //决定下个焦点在哪个格子
         if($$[i]) {//若此行存
@@ -392,6 +399,10 @@ $('body').keydown(e=>{
         }
         if(e.key === 'k') {
             $CUR.destroy()
+        }
+        //SAVE()
+        if(e.key === 's') {
+            SAVE()
         }
         //windows的C-c C-v等键还是应当使其发挥原有的作用
         if(!(0
