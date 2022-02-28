@@ -195,7 +195,11 @@ function createLATTICE (i, j)
         },
         up: {
             get: function() {
-                return $$[this.i-1][this.j]
+                try {
+                    return $$[this.i-1][this.j]
+                } catch (e) {
+                    return undefined
+                }
             },
             set: function(o) {
                 $$[this.i-1][this.j] = o
@@ -203,7 +207,11 @@ function createLATTICE (i, j)
         },
         down: {
             get: function() {
-                return $$[this.i+1][this.j]
+                try {
+                    return $$[this.i+1][this.j]
+                } catch(e) {
+                    return undefined
+                }
             },
             set: function(o) {
                 $$[this.i+1][this.j] = o
@@ -221,8 +229,9 @@ function createLATTICE (i, j)
         },
     })
 
-    $o.selected = function () {
+    $o.selected = function (unique=true) {
         if($CUR===$o)return;
+        if(unique) $('td.cur').removeClass('cur');
         $CUR = $o
         $CUR.addClass('cur')
         $o[0].focus()
@@ -280,7 +289,6 @@ function createLATTICE (i, j)
     })
 
     $o.click(function(){
-        $('td.cur').removeClass('cur')
         $o.selected()
     })
 if(0){
@@ -414,16 +422,20 @@ $('body').keydown(e=>{
         }
     }
     if(e.key==="ArrowUp"){
-
+        let $target = $CUR.up;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowDown"){
-        
+        let $target = $CUR.down;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowLeft"){
-        
+        let $target = $CUR.left;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowRight"){
-        
+        let $target = $CUR.right;
+            if($target) $target.selected();
     }
     
 })
