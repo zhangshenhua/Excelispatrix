@@ -90,10 +90,6 @@ setInterval(()=>{
 <button>随便啥</button>`],
 ]
 
-if (!localStorage.getItem('tabledata')){
-    RENDER(INITDATA)
-}
-
 // DATA是一个二维数组，用来存放每个格子的代码
 var DATA;
 
@@ -136,8 +132,6 @@ function LOAD(slot='tabledata', ) {
     DATA=JSON.parse(localStorage.getItem(slot))
     RENDER(DATA)
 }
-LOAD()
-
 
 //RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
 function RESETALL() {
@@ -440,6 +434,16 @@ $('body').keydown(e=>{
     
 })
 
+function main()
+{
+    if (!localStorage.getItem('tabledata')){
+        DATA = INITDATA
+        RENDER()
+    } else {
+        LOAD()
+    }
+}
+main()
 </script>
 </body>
 </html>
