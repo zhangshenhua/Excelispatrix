@@ -129,7 +129,11 @@ function RENDER (data=DATA) {
 
 //把localstorage里的东西加载到页面上。
 function LOAD(slot='tabledata', ) {
-    DATA=JSON.parse(localStorage.getItem(slot))
+    LOADJsonString(localStorage.getItem(slot))
+}
+
+function LOADJsonString(s) {
+    DATA = JSON.parse(s)
     RENDER(DATA)
 }
 
@@ -329,14 +333,9 @@ if(0){
         DATA[i].splice(j, 1); 
         //如果这行没有元素了，这行也要删掉。
         if(!DATA[i].length) DATA.splice(i, 1);
-        //如果删没了，则用INITDATA重新初始化
-        if(!DATA.length) {
-            RESETALL()
-    
-        } else {
-            //写localstorage并重新加载数据
-            RENDER()
-        }
+
+        RENDER()
+
         //决定下个焦点在哪个格子
         if($$[i]) {//若此行存
             if($$[i][j]){//若此格存即选此格
