@@ -90,10 +90,6 @@ setInterval(()=>{
 <button>随便啥</button>`],
 ]
 
-if (!localStorage.getItem('tabledata')){
-    localStorage.setItem('tabledata', JSON.stringify(INITDATA))
-}
-
 // DATA是一个二维数组，用来存放每个格子的代码
 var DATA;
 
@@ -109,17 +105,17 @@ var $$ = [];
 var $CUR;
 
 //把DATA这个二维数组存到localStorage里
-function SAVE() {
-    localStorage.setItem('tabledata', JSON.stringify(DATA))
+function SAVE(slot='tabledata', data=DATA, ) {
+    console.log(`SAVE到 ${slot} 中`)
+    localStorage.setItem(slot, JSON.stringify(data))
 }
 
-//LOAD()说加载就加载，把localstorage里的东西加载到页面上。
-function LOAD() {
-    DATA = JSON.parse(localStorage.getItem('tabledata'))
+//渲染
+function RENDER (data=DATA) {
     $('.BIGTABLE').remove()
     $TABLE = $(`<table class="BIGTABLE"></table>`).appendTo('body')
     $$ = []
-    $.each(DATA, (i, row)=>{
+    $.each(data, (i, row)=>{
         $$[i] = []
         $(`<tr id="${i}"></tr>`).appendTo($TABLE)
         $.each(row, (j, col)=>{
@@ -129,8 +125,17 @@ function LOAD() {
             $td.value = $td.myeval()
         })
     })
-};LOAD()
+}
 
+//把localstorage里的东西加载到页面上。
+function LOAD(slot='tabledata', ) {
+    LOADJsonString(localStorage.getItem(slot))
+}
+
+function LOADJsonString(s) {
+    DATA = JSON.parse(s)
+    RENDER(DATA)
+}
 
 //RESETALL()将把locolstorage重置成INITDATA，并重新加载页面。
 function RESETALL() {
@@ -159,7 +164,7 @@ function createLATTICE (i, j)
 
             set: function(s){
                 DATA[this.i][this.j] = s
-                SAVE()
+                //SAVE()
             }
         },
         value: {
@@ -188,7 +193,11 @@ function createLATTICE (i, j)
         },
         up: {
             get: function() {
-                return $$[this.i-1][this.j]
+                try {
+                    return $$[this.i-1][this.j]
+                } catch (e) {
+                    return undefined
+                }
             },
             set: function(o) {
                 $$[this.i-1][this.j] = o
@@ -196,7 +205,11 @@ function createLATTICE (i, j)
         },
         down: {
             get: function() {
-                return $$[this.i+1][this.j]
+                try {
+                    return $$[this.i+1][this.j]
+                } catch(e) {
+                    return undefined
+                }
             },
             set: function(o) {
                 $$[this.i+1][this.j] = o
@@ -214,8 +227,9 @@ function createLATTICE (i, j)
         },
     })
 
-    $o.selected = function () {
+    $o.selected = function (unique=true) {
         if($CUR===$o)return;
+        if(unique) $('td.cur').removeClass('cur');
         $CUR = $o
         $CUR.addClass('cur')
         $o[0].focus()
@@ -273,7 +287,6 @@ function createLATTICE (i, j)
     })
 
     $o.click(function(){
-        $('td.cur').removeClass('cur')
         $o.selected()
     })
 if(0){
@@ -289,28 +302,28 @@ if(0){
         console.log(`在${this.i}行的上面插入一行`)
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i, DATA[i])
-        SAVE();LOAD()
+        RENDER()
         $$[i][j].selected()
     }
     $o.insertRowDown = function() {
         console.log(`在${this.i}行的下面插入一行`)
         var i = this.i, j = this.j
         matrixInsertRow(DATA, i+1, DATA[i])
-        SAVE();LOAD()
+        RENDER()
         $$[i+1][j].selected()
     }
     $o.insertColLeft = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的左边插入一格`)
         arrayInsert(DATA[i], j)
-        SAVE();LOAD()
+        RENDER()
         $$[i][j].selected()
     }
     $o.insertColRight = function() {
         var i = this.i, j = this.j
         console.log(`在${i}行${j}列的右边插入一格`)
         arrayInsert(DATA[i], j+1)
-        SAVE();LOAD()
+        RENDER()
         $$[i][j+1].selected()
     }
     $o.destroy = function() {
@@ -320,14 +333,9 @@ if(0){
         DATA[i].splice(j, 1); 
         //如果这行没有元素了，这行也要删掉。
         if(!DATA[i].length) DATA.splice(i, 1);
-        //如果删没了，则用INITDATA重新初始化
-        if(!DATA.length) {
-            RESETALL()
-    
-        } else {
-            //写localstorage并重新加载数据
-            SAVE();LOAD()
-        }
+
+        RENDER()
+
         //决定下个焦点在哪个格子
         if($$[i]) {//若此行存
             if($$[i][j]){//若此格存即选此格
@@ -393,6 +401,10 @@ $('body').keydown(e=>{
         if(e.key === 'k') {
             $CUR.destroy()
         }
+        //SAVE()
+        if(e.key === 's') {
+            SAVE()
+        }
         //windows的C-c C-v等键还是应当使其发挥原有的作用
         if(!(0
             || e.key === 'Control'
@@ -403,20 +415,34 @@ $('body').keydown(e=>{
         }
     }
     if(e.key==="ArrowUp"){
-
+        let $target = $CUR.up;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowDown"){
-        
+        let $target = $CUR.down;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowLeft"){
-        
+        let $target = $CUR.left;
+            if($target) $target.selected();
     }
     if(e.key==="ArrowRight"){
-        
+        let $target = $CUR.right;
+            if($target) $target.selected();
     }
     
 })
 
+function main()
+{
+    if (!localStorage.getItem('tabledata')){
+        DATA = INITDATA
+        RENDER()
+    } else {
+        LOAD()
+    }
+}
+main()
 </script>
 </body>
 </html>
